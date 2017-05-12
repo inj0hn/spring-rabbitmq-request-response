@@ -16,6 +16,9 @@ public class App
         final ConfigurableApplicationContext configAppContext = SpringApplication.run(App.class, args);
         final RabbitMqSender sender = configAppContext.getBean(RabbitMqSender.class);
         sender.send();
+        System.out.println("***************************\nSending without correlationId\n***************************");
         sender.sendMany(1010);
+        System.out.println("***************************\nSending with correlationId\n***************************");
+        sender.sendManyWithCorrelationId(1009);
     }
 }

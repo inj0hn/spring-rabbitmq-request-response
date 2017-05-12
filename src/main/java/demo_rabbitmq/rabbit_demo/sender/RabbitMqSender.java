@@ -42,7 +42,33 @@ public class RabbitMqSender {
 			tasks.add(
 					() -> {
 						Message reply = template.sendAndReceive(rabbitMessage); 
-						return new String(reply.getBody());
+						return threadName + " : " + new String(reply.getBody());
+			});
+		}
+		ExecutorService executor = Executors.newFixedThreadPool(size);
+		List<Future<String>> futures = executor.invokeAll(tasks);
+		assert futures.size() == size;
+		Set<String> threadNames = new TreeSet<>();
+		for(Future<String> f : futures) {
+			threadNames.add(f.get());
+		}
+		assert threadNames.size() == size;
+		threadNames.stream().forEach(System.out::println);
+	}
+	
+	public void sendManyWithCorrelationId(int size) throws Exception {
+		List<Callable<String>> tasks = new ArrayList<>();
+		for(int i=0 ; i<size ; i++) {
+			String threadName = "Thread:" + String.format("%04d", new Integer(i+1));
+			String correlationId = new Integer(i+1).toString();
+			Message rabbitMessage = MessageBuilder.withBody(threadName.getBytes())
+					.setContentType("text/plain")
+					.setCorrelationId(correlationId.getBytes())
+					.build();
+			tasks.add(
+					() -> {
+						Message reply = template.sendAndReceive(rabbitMessage); 
+						return threadName + ", correlationId:" + correlationId + " <=> " + new String(reply.getBody()) + ", correlationId:" + new String(reply.getMessageProperties().getCorrelationId());
 			});
 		}
 		ExecutorService executor = Executors.newFixedThreadPool(size);
