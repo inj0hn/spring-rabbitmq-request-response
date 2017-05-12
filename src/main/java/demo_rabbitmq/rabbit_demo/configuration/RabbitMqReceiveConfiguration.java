@@ -60,6 +60,7 @@ public class RabbitMqReceiveConfiguration {
 		container.setConnectionFactory(connectionFactory);
 		container.setMessageListener(rabbitTemplate);
 		container.setQueues(replies);
+		container.setMaxConcurrentConsumers(20);
 		return container;
 	}
 	
@@ -70,6 +71,7 @@ public class RabbitMqReceiveConfiguration {
 		container.setConnectionFactory(connectionFactory);
 		container.setQueues(greeting());
 		container.setMessageListener(receiver());
+		container.setMaxConcurrentConsumers(20);
 		return container;
 	}
 	
